@@ -1,4 +1,4 @@
-# 🏜 Spice Meter
+# 🏜 Claude Spice Harvester
 ### *A Dune-inspired macOS menu bar app for Claude Code usage*
 
 > "The spice must flow." — Dune
@@ -7,7 +7,7 @@
 
 ## What it does
 
-Spice Meter sits in your macOS menu bar and shows your Claude Code token usage at a glance. Click **Open Spice Ledger** for a full Dune-themed dashboard with charts and breakdowns.
+Claude Spice Harvester sits in your macOS menu bar and shows your Claude Code token usage at a glance. Click **Open Spice Ledger** for a full Dune-themed dashboard with charts and breakdowns.
 
 **Menu bar shows:**
 ```
@@ -29,7 +29,7 @@ Spice Meter sits in your macOS menu bar and shows your Claude Code token usage a
 pip3 install rumps
 
 # 2. Run it
-python3 spice_meter.py
+python3 claude_spice_harvester.py
 ```
 
 You'll see `🏜` appear in your menu bar immediately.
@@ -43,10 +43,10 @@ chmod +x build_app.sh
 ./build_app.sh
 ```
 
-This produces `SpiceMeter.app`. Drag it to `/Applications` and double-click.
+This produces `ClaudeSpiceHarvester.app`. Drag it to `/Applications` and double-click.
 
 **First launch warning:** macOS Gatekeeper will say it's from an "unidentified developer" because the app isn't signed with a paid Apple Developer certificate. Fix it once:
-> Right-click `SpiceMeter.app` → **Open** → **Open**
+> Right-click `ClaudeSpiceHarvester.app` → **Open** → **Open**
 
 After that, it launches normally forever.
 
@@ -54,7 +54,7 @@ After that, it launches normally forever.
 
 ## How it reads your data
 
-Spice Meter scans `~/.claude/` for Claude Code's JSONL session files. Each file contains conversation history with token usage in every assistant response. The app totals these up locally — no network calls, no data leaves your machine.
+Claude Spice Harvester scans `~/.claude/` for Claude Code's JSONL session files. Each file contains conversation history with token usage in every assistant response. The app totals these up locally — no network calls, no data leaves your machine.
 
 **Data sources checked (in order):**
 1. `~/.claude/projects/**/*.jsonl`
@@ -77,12 +77,12 @@ Spice Meter scans `~/.claude/` for Claude Code's JSONL session files. Each file 
 
 ## Customization
 
-Open `spice_meter.py` in any text editor to tweak:
+Open `claude_spice_harvester.py` in any text editor to tweak:
 
-- **Refresh interval** — change `300` (seconds) in `SpiceMeterApp.__init__`
+- **Refresh interval** — change `300` (seconds) in `ClaudeSpiceHarvesterApp.__init__`
 - **Token pricing** — update the `pricing` dict in `estimate_cost()`
 - **Dashboard colors** — edit the CSS variables at the top of `HTML_TEMPLATE`
-- **Menu bar icon** — change `"🏜"` in `SpiceMeterApp.__init__`
+- **Menu bar icon** — change `"🏜"` in `ClaudeSpiceHarvesterApp.__init__`
 
 ---
 

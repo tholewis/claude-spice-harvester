@@ -4,5 +4,5 @@ __pycache__/
 dist/
 build/
 *.spec
-SpiceMeter.app/
+ClaudeSpiceHarvester.app/
 .DS_Store

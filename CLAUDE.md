@@ -5,7 +5,7 @@ macOS menu bar app that tracks Claude Code token usage from `~/.claude/`. Dune-t
 ## Running
 
 ```bash
-python3 spice_meter.py
+python3 claude_spice_harvester.py
 ```
 
 Requires: `pip install rumps` (and optionally `pyobjc` for color support — usually pre-installed on macOS).
@@ -13,8 +13,8 @@ Requires: `pip install rumps` (and optionally `pyobjc` for color support — usu
 ## File structure
 
 ```
-spice_meter.py     — entire app (data layer + HTML dashboard + menu bar app)
-build_app.sh       — packages into a standalone SpiceMeter.app via PyInstaller
+claude_spice_harvester.py  — entire app (data layer + HTML dashboard + menu bar app)
+build_app.sh               — packages into a standalone ClaudeSpiceHarvester.app via PyInstaller
 docs/README.md     — user-facing documentation
 ```
 
@@ -30,7 +30,7 @@ docs/README.md     — user-facing documentation
 
 **Template substitution**: the HTML template contains CSS with `{ }` blocks, so `str.format()` breaks it. Always use the `substitutions` dict with explicit `str.replace()` calls. Never switch to `.format()`.
 
-**Menu bar colors** (`_paint`, `_paint_gradient`): use `NSAttributedString` / `NSMutableAttributedString` from AppKit. Setting `item.title = ...` clears any attributed string, so `_paint()` must be called again after every title update in `refresh_data()`. Items with `callback=None` are disabled (grayed out) by macOS — use `lambda _: None` to keep them enabled while still non-interactive.
+**Menu bar colors** (`_paint`): uses `NSAttributedString` from AppKit. Setting `item.title = ...` clears any attributed string, so `_paint()` must be called again after every title update in `refresh_data()`. Items with `callback=None` are disabled (grayed out) by macOS — use `lambda _: None` to keep them enabled while still non-interactive.
 
 ## Dune color palette
 

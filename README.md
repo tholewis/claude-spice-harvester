@@ -22,6 +22,18 @@ Claude Spice Harvester sits in your macOS menu bar and shows your Claude Code to
 
 ---
 
+## Prerequisites
+
+| Requirement | Notes |
+|---|---|
+| macOS 12 or later | Menu bar apps require macOS |
+| Python 3.9+ | Check with `python3 --version` |
+| [Claude Code](https://claude.ai/code) installed and used at least once | The app reads from `~/.claude/` — nothing to show until Claude Code has run |
+| `rumps` | `pip3 install rumps` |
+| `pyobjc` | Needed for menu color support; usually pre-installed on macOS. Install with `pip3 install pyobjc` if colors are missing. |
+
+---
+
 ## Quick Start
 
 ```bash
@@ -29,7 +41,7 @@ Claude Spice Harvester sits in your macOS menu bar and shows your Claude Code to
 pip3 install rumps
 
 # 2. Run it
-python3 spice_meter.py
+python3 claude_spice_harvester.py
 ```
 
 `🏜` appears in your menu bar immediately. No account, no API key, no network calls — it reads directly from `~/.claude/`.
@@ -57,10 +69,10 @@ chmod +x build_app.sh
 ./build_app.sh
 ```
 
-Produces `SpiceMeter.app`. Drag to `/Applications` and double-click.
+Produces `ClaudeSpiceHarvester.app`. Drag to `/Applications` and double-click.
 
 **First launch:** macOS Gatekeeper will warn about an unidentified developer. Fix it once:
-> Right-click `SpiceMeter.app` → **Open** → **Open**
+> Right-click `ClaudeSpiceHarvester.app` → **Open** → **Open**
 
 ---
 
@@ -74,13 +86,13 @@ Spice Harvester scans `~/.claude/projects/**/*.jsonl` for Claude Code's JSONL se
 
 ## Customization
 
-Edit `spice_meter.py` directly:
+Edit `claude_spice_harvester.py` directly:
 
 | What | Where |
 |---|---|
-| Refresh interval | `300` (seconds) in `SpiceMeterApp.__init__` |
+| Refresh interval | `300` (seconds) in `ClaudeSpiceHarvesterApp.__init__` |
 | Token pricing | `pricing` dict in `estimate_cost()` |
-| Menu bar icon | `"🏜"` in `SpiceMeterApp.__init__` |
+| Menu bar icon | `"🏜"` in `ClaudeSpiceHarvesterApp.__init__` |
 
 ---
 
@@ -95,14 +107,6 @@ Edit `spice_meter.py` directly:
 
 ---
 
-## Requirements
-
-- macOS 12+
-- Python 3.9+
-- [`rumps`](https://github.com/jaredks/rumps) (`pip3 install rumps`)
-- `pyobjc` for menu color support (usually pre-installed on macOS)
-
----
 
 *Reads from `~/.claude/` · No network calls · Data stays local*  
 *Built with `rumps` · Dune theme inspired by Frank Herbert*

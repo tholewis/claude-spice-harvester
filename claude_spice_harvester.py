@@ -922,7 +922,7 @@ THEMES = {
 
 
 def load_config():
-    config_dir = Path.home() / "Library" / "Application Support" / "SpiceMeter"
+    config_dir = Path.home() / "Library" / "Application Support" / "ClaudeSpiceHarvester"
     config_dir.mkdir(parents=True, exist_ok=True)
     config_file = config_dir / "config.json"
     if config_file.exists():
@@ -935,7 +935,7 @@ def load_config():
 
 
 def save_config(config):
-    config_dir = Path.home() / "Library" / "Application Support" / "SpiceMeter"
+    config_dir = Path.home() / "Library" / "Application Support" / "ClaudeSpiceHarvester"
     config_dir.mkdir(parents=True, exist_ok=True)
     config_file = config_dir / "config.json"
     try:
@@ -965,11 +965,11 @@ def _paint(item, rgb, size=13.5):
 
 
 
-class SpiceMeterApp(rumps.App):
+class ClaudeSpiceHarvesterApp(rumps.App):
     def __init__(self):
         super().__init__(name="Claude Spice Harvester", title="🏜", quit_button=None)
         self._data = None
-        self._html_path = os.path.join(tempfile.gettempdir(), "spice_meter.html")
+        self._html_path = os.path.join(tempfile.gettempdir(), "claude_spice_harvester.html")
         self._config = load_config()
         self._theme = THEMES.get(self._config.get("theme", "dune"), THEMES["dune"])
 
@@ -1100,7 +1100,7 @@ class SpiceMeterApp(rumps.App):
 
 
 def main():
-    SpiceMeterApp().run()
+    ClaudeSpiceHarvesterApp().run()
 
 
 if __name__ == "__main__":
