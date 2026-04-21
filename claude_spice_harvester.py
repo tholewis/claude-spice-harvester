@@ -318,7 +318,6 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   :root {
     {css_vars}
   }
-  }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -352,7 +351,6 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     80%  { opacity: 0.2; }
     100% { transform: translateX(120px) translateY(-30px); opacity: 0; }
   }
-{particles_divs}
 
   .particle {
     position: fixed; width: 2px; height: 2px;
@@ -408,7 +406,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .session-panel::before {
     content: '';
     position: absolute; inset: 0;
-    background: radial-gradient(ellipse at top left, rgba(201,148,42,0.07), transparent 60%);
+    background: radial-gradient(ellipse at top left, var(--panel-glow), transparent 60%);
     pointer-events: none;
   }
 
@@ -448,7 +446,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   }
   .stat-card::before {
     content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse at top, rgba(201,148,42,0.04), transparent 70%);
+    background: radial-gradient(ellipse at top, var(--panel-glow), transparent 70%);
     pointer-events: none;
   }
   .stat-label { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.25em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem; }
@@ -595,17 +593,17 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
   <div class="stats-grid">
     <div class="stat-card">
-      <div class="stat-label">Today's Harvest</div>
+      <div class="stat-label">{today_label}</div>
       <div class="stat-value">{today_tokens}</div>
       <div class="stat-sub">${today_cost} spent today</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">7-Day Total</div>
+      <div class="stat-label">{week_label}</div>
       <div class="stat-value">{week_tokens}</div>
       <div class="stat-sub">${week_cost} this week</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">All-Time Guild Debt</div>
+      <div class="stat-label">{total_label}</div>
       <div class="stat-value cost">${total_cost}</div>
       <div class="stat-sub">{total_tokens} tokens lifetime</div>
     </div>
@@ -727,14 +725,19 @@ def build_html(data, theme):
             + rows + '</div>'
         )
 
-    particles_divs = "\n".join('  <div class="particle" style="left: {}%; top: {}%; animation-delay: {}s;"></div>'.format(p[0], p[1], p[2]) for p in theme["particles"])
-
     substitutions = {
+        "{css_vars}":         "\n    ".join(f"{k}: {v};" for k, v in theme["css_vars"].items()),
+        "{bg_gradients}":     ",\n    ".join(theme["bg_gradients"]),
+        "{particles}":        json.dumps(theme["particles"]),
+
         "{last_updated}":     data["last_updated"],
         "{title}":            theme["title"],
         "{tagline}":          theme["tagline"],
         "{ornament}":         theme["ornament"],
         "{gauge_label}":      theme.get("gauge_label", "⬡ Spice Flow Gauge"),
+        "{today_label}":      theme.get("stat_labels", {}).get("today", "Today's Harvest"),
+        "{week_label}":       theme.get("stat_labels", {}).get("week", "7-Day Total"),
+        "{total_label}":      theme.get("stat_labels", {}).get("total", "All-Time Guild Debt"),
         "{session_tok_str}":  fmt_tokens(session_all),
         "{session_divider}":  theme["dividers"][0],
         "{reserves_divider}": theme["dividers"][1],
@@ -755,10 +758,12 @@ def build_html(data, theme):
         "{pct_color}":        pct_color,
         "{gauge_pct_str}":    gauge_pct_str,
         "{gauge_pct_num}":    str(gauge_pct),
-        "{particles_divs}": particles_divs,
         "{today_tokens}":     fmt_tokens(today_all),
         "{today_cost}":       f"{today['cost_usd']:.2f}",
         "{week_tokens}":      fmt_tokens(week_all),
+        "{week_cost}":        f"{week['cost_usd']:.2f}",
+        "{total_cost}":       f"{totals['cost_usd']:.2f}",
+        "{total_tokens}":     fmt_tokens(total_all),
         "{total_cost_full}":  f"{totals['cost_usd']:.4f}",
         "{total_input}":      fmt_tokens(totals["input_tokens"]),
         "{total_output}":     fmt_tokens(totals["output_tokens"]),
@@ -820,6 +825,7 @@ THEMES = {
             "--text-dim": "#7a6345",
             "--text-faint": "#3d3020",
             "--border": "#2e2210",
+            "--panel-glow": "rgba(201,148,42,0.07)",
         },
         "bg_gradients": [
             "radial-gradient(ellipse 80% 40% at 50% 90%, rgba(139,90,20,0.12), transparent)",
@@ -833,90 +839,123 @@ THEMES = {
         "dividers": ["⬡ CURRENT SESSION WINDOW ⬡", "⬡ SPICE RESERVES ⬡", "Flow Breakdown — Lifetime", "⬡ 7-DAY HARVESTING RECORD ⬡", "Daily Spice Yield", "⬡ ORACLE MODELS ⬡", "Tokens by Model"],
         "footer": "He who controls the spice controls the universe.",
         "gauge_label": "⬡ Spice Flow Gauge",
+        "stat_labels": {
+            "today": "Today's Harvest",
+            "week": "7-Day Total",
+            "total": "All-Time Guild Debt",
+        },
     },
     "caladan": {
         "name": "Caladan",
         "menu_colors": {
-            "session": (0.0, 0.5, 0.8),  # deep blue
-            "session_pct": (0.4, 0.7, 0.9),  # light blue
-            "session_reset": (0.0, 0.6, 0.5),  # teal
-            "today": (0.4, 0.7, 0.9),  # light blue
-            "week": (0.0, 0.6, 0.5),  # teal
-            "total": (0.0, 0.4, 0.2),  # forest green
-            "action": (0.2, 0.6, 1.0),  # ocean blue
-            "danger": (0.8, 0.4, 0.4),  # coral red
+            "session":       (0.20, 0.72, 0.95),   # bright ocean cyan
+            "session_pct":   (0.30, 0.60, 0.85),   # mid ocean blue
+            "session_reset": (0.05, 0.50, 0.70),   # deep sea teal
+            "today":         (0.30, 0.60, 0.85),
+            "week":          (0.05, 0.50, 0.70),
+            "total":         (0.00, 0.38, 0.60),   # abyssal blue
+            "action":        (0.20, 0.65, 0.90),
+            "danger":        (0.75, 0.30, 0.30),
         },
         "css_vars": {
-            "--sand-dark": "#001122",
-            "--sand-mid": "#002244",
-            "--sand-warm": "#003366",
-            "--sand-pale": "#004477",
-            "--gold-deep": "#0066aa",
-            "--gold-mid": "#00aaff",
-            "--gold-bright": "#33ccff",
-            "--gold-glow": "#66ddff",
-            "--spice-red": "#ff6666",
-            "--spice-orange": "#ff9999",
-            "--spice-bright": "#ffcccc",
-            "--text-main": "#cceeff",
-            "--text-dim": "#6699cc",
-            "--text-faint": "#334466",
-            "--border": "#004477",
+            "--sand-dark":    "#000d1a",
+            "--sand-mid":     "#001830",
+            "--sand-warm":    "#00233f",
+            "--sand-pale":    "#002e52",
+            "--gold-deep":    "#005588",
+            "--gold-mid":     "#1ea8d8",
+            "--gold-bright":  "#34c8f5",
+            "--gold-glow":    "#80e8ff",
+            "--spice-red":    "#2aa88a",
+            "--spice-orange": "#3ec8a8",
+            "--spice-bright": "#60eed0",
+            "--text-main":    "#c8eeff",
+            "--text-dim":     "#5a8fae",
+            "--text-faint":   "#1e3d55",
+            "--border":       "#002e52",
+            "--panel-glow":   "rgba(30,168,216,0.08)",
         },
         "bg_gradients": [
-            "radial-gradient(ellipse 80% 40% at 50% 90%, rgba(0,100,200,0.12), transparent)",
-            "radial-gradient(ellipse 60% 30% at 20% 70%, rgba(0,150,255,0.07), transparent)",
-            "radial-gradient(ellipse 40% 60% at 80% 20%, rgba(0,200,255,0.05), transparent)",
+            "radial-gradient(ellipse 100% 40% at 50% 100%, rgba(0,90,180,0.22), transparent)",
+            "radial-gradient(ellipse 60% 30% at 15% 65%, rgba(0,160,220,0.09), transparent)",
+            "radial-gradient(ellipse 40% 60% at 85% 20%, rgba(0,210,255,0.05), transparent)",
         ],
-        "particles": ['#00aaff','#33ccff','#0066aa','#ff9999'],
-        "title": "WATER METER",
-        "tagline": "The water must flow.",
-        "ornament": "🌊 &nbsp; CALADAN DATA TERMINAL &nbsp; 🌊",
-        "dividers": ["🌊 CURRENT SESSION WINDOW 🌊", "🌊 WATER RESERVES 🌊", "🌊 Flow Breakdown — Lifetime", "🌊 7-DAY HARVESTING RECORD 🌊", "🌊 Daily Water Yield", "🌊 ORACLE MODELS 🌊", "🌊 Tokens by Model"],
-        "footer": "He who controls the water controls the universe.",
-        "gauge_label": "🌊 Water Flow Gauge",
+        "particles": ['#1ea8d8','#34c8f5','#005588','#3ec8a8'],
+        "title": "ATREIDES SIGNAL LOG",
+        "tagline": "Water and will — the Atreides way.",
+        "ornament": "〰 &nbsp; CALADAN DATA TERMINAL &nbsp; 〰",
+        "dividers": [
+            "〰 CURRENT SESSION WINDOW 〰",
+            "〰 WATER RESERVES 〰",
+            "Flow Breakdown — Lifetime",
+            "〰 7-DAY SIGNAL RECORD 〰",
+            "Daily Signal Yield",
+            "〰 ATREIDES MODELS 〰",
+            "Tokens by Model",
+        ],
+        "footer": "The sea remembers all. House Atreides endures.",
+        "gauge_label": "〰 Signal Flow Gauge",
+        "stat_labels": {
+            "today": "Today's Tide",
+            "week": "7-Day Current",
+            "total": "All-Time Depth",
+        },
     },
     "giedi_prime": {
         "name": "Giedi Prime",
         "menu_colors": {
-            "session": (0.3, 0.3, 0.3),  # dark gray
-            "session_pct": (0.5, 0.5, 0.5),  # medium gray
-            "session_reset": (0.4, 0.4, 0.4),  # light gray
-            "today": (0.5, 0.5, 0.5),  # medium gray
-            "week": (0.4, 0.4, 0.4),  # light gray
-            "total": (0.1, 0.1, 0.1),  # black
-            "action": (0.7, 0.2, 0.2),  # industrial red
-            "danger": (0.9, 0.1, 0.1),  # bright red
+            "session":       (0.65, 0.65, 0.65),   # cold steel
+            "session_pct":   (0.50, 0.50, 0.50),
+            "session_reset": (0.40, 0.40, 0.40),
+            "today":         (0.50, 0.50, 0.50),
+            "week":          (0.40, 0.40, 0.40),
+            "total":         (0.72, 0.18, 0.18),   # machine red
+            "action":        (0.72, 0.20, 0.20),
+            "danger":        (0.88, 0.10, 0.10),
         },
         "css_vars": {
-            "--sand-dark": "#111111",
-            "--sand-mid": "#222222",
-            "--sand-warm": "#333333",
-            "--sand-pale": "#444444",
-            "--gold-deep": "#555555",
-            "--gold-mid": "#777777",
-            "--gold-bright": "#999999",
-            "--gold-glow": "#bbbbbb",
-            "--spice-red": "#cc3333",
-            "--spice-orange": "#dd5555",
-            "--spice-bright": "#ee7777",
-            "--text-main": "#cccccc",
-            "--text-dim": "#888888",
-            "--text-faint": "#555555",
-            "--border": "#444444",
+            "--sand-dark":    "#0d0d0d",
+            "--sand-mid":     "#1a1a1a",
+            "--sand-warm":    "#252525",
+            "--sand-pale":    "#333333",
+            "--gold-deep":    "#444444",
+            "--gold-mid":     "#888888",
+            "--gold-bright":  "#aaaaaa",
+            "--gold-glow":    "#c00000",
+            "--spice-red":    "#8b1010",
+            "--spice-orange": "#b82020",
+            "--spice-bright": "#d83030",
+            "--text-main":    "#c8c8c8",
+            "--text-dim":     "#707070",
+            "--text-faint":   "#404040",
+            "--border":       "#333333",
+            "--panel-glow":   "rgba(180,25,25,0.10)",
         },
         "bg_gradients": [
-            "radial-gradient(ellipse 80% 40% at 50% 90%, rgba(100,100,100,0.12), transparent)",
-            "radial-gradient(ellipse 60% 30% at 20% 70%, rgba(150,150,150,0.07), transparent)",
-            "radial-gradient(ellipse 40% 60% at 80% 20%, rgba(120,120,120,0.05), transparent)",
+            "radial-gradient(ellipse 90% 35% at 50% 100%, rgba(160,20,20,0.18), transparent)",
+            "radial-gradient(ellipse 50% 50% at 5%  50%, rgba(70,70,70,0.08),   transparent)",
+            "radial-gradient(ellipse 40% 60% at 95% 10%, rgba(50,50,50,0.06),   transparent)",
         ],
-        "particles": ['#777777','#999999','#555555','#dd5555'],
-        "title": "ORE METER",
-        "tagline": "The ore must flow.",
-        "ornament": "⚙️ &nbsp; GIEDI PRIME DATA TERMINAL &nbsp; ⚙️",
-        "dividers": ["⚙️ CURRENT SESSION WINDOW ⚙️", "⚙️ ORE RESERVES ⚙️", "⚙️ Flow Breakdown — Lifetime", "⚙️ 7-DAY HARVESTING RECORD ⚙️", "⚙️ Daily Ore Yield", "⚙️ ORACLE MODELS ⚙️", "⚙️ Tokens by Model"],
-        "footer": "He who controls the ore controls the universe.",
-        "gauge_label": "⚙️ Ore Flow Gauge",
+        "particles": ['#888888','#aaaaaa','#444444','#b82020'],
+        "title": "HARKONNEN PROCESSOR",
+        "tagline": "Consume. Calculate. Conquer.",
+        "ornament": "⬛ &nbsp; GIEDI PRIME INDUSTRIAL TERMINAL &nbsp; ⬛",
+        "dividers": [
+            "// CURRENT SESSION WINDOW //",
+            "// PRODUCTION RESERVES //",
+            "Processing Breakdown — Lifetime",
+            "// 7-DAY YIELD RECORD //",
+            "Daily Processing Output",
+            "// HARKONNEN MODELS //",
+            "Tokens by Model",
+        ],
+        "footer": "Efficiency is the only virtue. — Baron Harkonnen",
+        "gauge_label": "⬛ Processing Load Gauge",
+        "stat_labels": {
+            "today": "Today's Output",
+            "week": "7-Day Yield",
+            "total": "All-Time Production",
+        },
     },
 }
 
