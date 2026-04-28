@@ -17,6 +17,8 @@ import os
 import glob
 import tempfile
 import webbrowser
+import subprocess
+import sys
 from pathlib import Path
 from datetime import datetime, date, timedelta, timezone as _tz
 
@@ -1139,8 +1141,80 @@ class ClaudeSpiceHarvesterApp(rumps.App):
         webbrowser.open(f"file://{self._html_path}")
 
 
+try:
+    import objc as _objc
+    from Foundation import NSObject as _NSObject, NSRunLoopCommonModes as _COMMON
+    _HAS_OBJC = True
+except ImportError:
+    _HAS_OBJC = False
+
+
+if _HAS_OBJC:
+    class _ShotHelper(_NSObject):
+        """Screenshot sequencer using NSRunLoopCommonModes selectors so steps
+        fire inside the menu's NSEventTrackingRunLoopMode modal loop."""
+
+        @_objc.python_method
+        def configure(self, app, output_path):
+            self._app         = app
+            self._output_path = output_path
+            self._region      = "0,0,330,360"  # "x,y,w,h" for screencapture -R
+
+        def step1_(self, _):
+            nsitem = self._app._nsapp.nsstatusitem
+
+            # Compute the menu region from the status bar window position.
+            # The popup menu right-aligns with the button's right edge.
+            for w in _AppKit.NSApplication.sharedApplication().windows():
+                if type(w).__name__ == "NSStatusBarWindow" and w.isVisible():
+                    f         = w.frame()   # NSScreen bottom-up; x not flipped
+                    btn_right = int(f.origin.x + f.size.width)
+                    menu_w    = 330
+                    self._region = f"{max(0, btn_right - menu_w)},0,{menu_w},360"
+                    break
+
+            self.performSelector_withObject_afterDelay_inModes_(
+                "step2:", None, 1.2, [_COMMON]
+            )
+            nsitem.button().performClick_(None)
+
+        def step2_(self, _):
+            subprocess.run(
+                ["screencapture", "-x", "-R", self._region, self._output_path],
+                check=True,
+            )
+            self._app._nsapp.nsstatusitem.menu().cancelTracking()
+            self.performSelector_withObject_afterDelay_inModes_(
+                "step3:", None, 0.3, [_COMMON]
+            )
+
+        def step3_(self, _):
+            rumps.quit_application()
+
+
+def _run_screenshot_mode(output_path: str) -> None:
+    """Launch app, open its own menu, capture the menu region, then quit."""
+    if not _HAS_OBJC:
+        print("PyObjC required for screenshot mode", file=sys.stderr)
+        return
+
+    app    = ClaudeSpiceHarvesterApp()
+    helper = _ShotHelper.alloc().init()
+    helper.configure(app, output_path)
+
+    def _kick(t: rumps.Timer) -> None:
+        t.stop()
+        helper.step1_(None)
+
+    rumps.Timer(_kick, 2).start()
+    app.run()
+
+
 def main():
-    ClaudeSpiceHarvesterApp().run()
+    if len(sys.argv) == 3 and sys.argv[1] == "--screenshot":
+        _run_screenshot_mode(sys.argv[2])
+    else:
+        ClaudeSpiceHarvesterApp().run()
 
 
 if __name__ == "__main__":
