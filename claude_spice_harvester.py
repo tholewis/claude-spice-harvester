@@ -719,9 +719,9 @@ def build_html(data, theme):
                 f'</div>'
             )
         model_section = (
-            '<div class="divider"><span>{models_divider}</span></div>'
+            f'<div class="divider"><span>{theme["dividers"][5]}</span></div>'
             '<div class="breakdown-card">'
-            '<div class="card-title">{models_title}</div>'
+            f'<div class="card-title">{theme["dividers"][6]}</div>'
             + rows + '</div>'
         )
 
@@ -744,8 +744,6 @@ def build_html(data, theme):
         "{breakdown_title}":  theme["dividers"][2],
         "{chart_divider}":    theme["dividers"][3],
         "{chart_title}":      theme["dividers"][4],
-        "{models_divider}":   theme["dividers"][5],
-        "{models_title}":     theme["dividers"][6],
         "{footer}":           theme["footer"],
 
         "{session_input}":    fmt_tokens(session["input_tokens"]),
@@ -798,7 +796,7 @@ _C_DANGER  = (0.60, 0.22, 0.09)   # blood-spice red       — quit
 # Theme definitions
 THEMES = {
     "dune": {
-        "name": "Dune",
+        "name": "Arrakis",
         "menu_colors": {
             "session": _C_GOLD,
             "session_pct": _C_SAND,

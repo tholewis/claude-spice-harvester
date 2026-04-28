@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Spice Harvester — Claude Code Usage</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@400;700&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --sand-dark: #0d0d0d;
+    --sand-mid: #1a1a1a;
+    --sand-warm: #252525;
+    --sand-pale: #333333;
+    --gold-deep: #444444;
+    --gold-mid: #888888;
+    --gold-bright: #aaaaaa;
+    --gold-glow: #c00000;
+    --spice-red: #8b1010;
+    --spice-orange: #b82020;
+    --spice-bright: #d83030;
+    --text-main: #c8c8c8;
+    --text-dim: #707070;
+    --text-faint: #404040;
+    --border: #333333;
+    --panel-glow: rgba(180,25,25,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--sand-dark);
+    color: var(--text-main);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Layered dune background */
+  .dune-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse 90% 35% at 50% 100%, rgba(160,20,20,0.18), transparent),
+    radial-gradient(ellipse 50% 50% at 5%  50%, rgba(70,70,70,0.08),   transparent),
+    radial-gradient(ellipse 40% 60% at 95% 10%, rgba(50,50,50,0.06),   transparent);
+  }
+
+  /* Subtle scan lines */
+  .scanlines {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 3px,
+      rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
+    );
+  }
+
+  /* Slow drifting sand particles */
+  @keyframes drift {
+    0%   { transform: translateX(-20px) translateY(0px);   opacity: 0; }
+    20%  { opacity: 0.4; }
+    80%  { opacity: 0.2; }
+    100% { transform: translateX(120px) translateY(-30px); opacity: 0; }
+  }
+
+  .particle {
+    position: fixed; width: 2px; height: 2px;
+    background: var(--gold-mid); border-radius: 50%;
+    animation: drift linear infinite;
+    pointer-events: none; z-index: 2;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem; position: relative; z-index: 3; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 2.5rem; }
+  .ornament { color: var(--gold-deep); font-size: 0.75rem; letter-spacing: 0.6em; margin-bottom: 0.6rem; }
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 2.8rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--gold-deep), var(--gold-glow), var(--gold-mid));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    letter-spacing: 0.08em;
+  }
+  .tagline {
+    font-family: 'Cinzel', serif;
+    color: var(--text-dim); font-size: 0.72rem;
+    letter-spacing: 0.35em; margin-top: 0.4rem; text-transform: uppercase;
+  }
+  .updated { font-size: 0.65rem; color: var(--text-faint); margin-top: 0.7rem; letter-spacing: 0.15em; }
+
+  /* ── Section divider ── */
+  .divider {
+    display: flex; align-items: center; gap: 0.8rem; margin: 2rem 0;
+    color: var(--gold-deep);
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-deep));
+  }
+  .divider::after { background: linear-gradient(90deg, var(--gold-deep), transparent); }
+  .divider span { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.3em; white-space: nowrap; }
+
+  /* ── Session Panel ── */
+  .session-panel {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 1.5rem;
+    background: var(--sand-mid);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold-mid);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .session-panel::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at top left, var(--panel-glow), transparent 60%);
+    pointer-events: none;
+  }
+
+  /* SVG gauge */
+  .gauge-wrap { display: flex; align-items: center; justify-content: center; }
+  .gauge-label { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.3em; color: var(--gold-mid); text-transform: uppercase; margin-bottom: 1.2rem; }
+
+  /* Session right-side stats */
+  .session-stats { display: flex; flex-direction: column; justify-content: center; gap: 1rem; padding-left: 1rem; }
+  .session-stat-label { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.25em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.2rem; }
+  .session-stat-val { font-size: 2.2rem; font-weight: 700; color: var(--gold-bright); line-height: 1; }
+  .session-stat-val.dim { font-size: 1.3rem; color: var(--text-main); }
+  .session-stat-val.orange { color: var(--spice-orange); }
+  .session-reset { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+  .reset-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(139,58,26,0.25); border: 1px solid var(--spice-red);
+    padding: 0.3rem 0.7rem; font-size: 0.75rem; color: var(--spice-orange);
+  }
+  .reset-badge::before { content: '⟳'; font-size: 0.9rem; }
+  .session-note { font-size: 0.62rem; color: var(--text-faint); margin-top: 0.8rem; line-height: 1.5; }
+  .session-primary { display: flex; flex-direction: column; justify-content: center; }
+  .session-big-num { font-size: 3rem; font-weight: 700; line-height: 1; margin: 0.4rem 0 0.2rem; }
+  .session-pct-bar-wrap { height: 10px; background: var(--sand-pale); margin: 0.7rem 0 0.3rem; }
+  .session-pct-bar-fill { height: 100%; }
+  .session-pct-label { font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.2em; margin-top: 0.2rem; }
+
+  /* ── Stats grid ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-card {
+    background: var(--sand-mid);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--gold-deep);
+    padding: 1.2rem 1rem;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at top, var(--panel-glow), transparent 70%);
+    pointer-events: none;
+  }
+  .stat-label { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.25em; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem; }
+  .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--gold-bright); line-height: 1; }
+  .stat-value.cost { color: var(--spice-orange); }
+  .stat-sub { font-size: 0.62rem; color: var(--text-faint); margin-top: 0.3rem; }
+
+  /* ── Breakdown card ── */
+  .breakdown-card {
+    background: var(--sand-mid); border: 1px solid var(--border);
+    padding: 1.4rem; margin-bottom: 1rem;
+  }
+  .card-title {
+    font-family: 'Cinzel', serif; font-size: 0.65rem;
+    letter-spacing: 0.3em; color: var(--gold-mid);
+    text-transform: uppercase; margin-bottom: 1.1rem;
+  }
+  .breakdown-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.4rem 0; border-bottom: 1px solid var(--text-faint);
+    font-size: 0.82rem;
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .bk { color: var(--text-dim); }
+  .bv { color: var(--text-main); font-weight: 600; }
+  .bv.hi { color: var(--gold-bright); }
+  .bv.co { color: var(--spice-orange); }
+
+  /* ── Bar chart ── */
+  .chart-card { background: var(--sand-mid); border: 1px solid var(--border); padding: 1.4rem; margin-bottom: 1rem; }
+  .bars { display: flex; align-items: flex-end; gap: 0.4rem; height: 110px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+  .bar-fill {
+    width: 100%;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold-deep));
+    min-height: 2px; position: relative;
+  }
+  .bar-fill.today { background: linear-gradient(180deg, var(--spice-bright), var(--spice-red)); }
+  .bar-fill.today::after {
+    content: ''; position: absolute; inset: 0;
+    background: inherit; filter: blur(6px); opacity: 0.4; z-index: -1;
+  }
+  .bar-label { font-size: 0.58rem; color: var(--text-faint); }
+  .bar-val { font-size: 0.6rem; color: var(--text-dim); }
+
+  /* ── Model rows ── */
+  .model-row {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.45rem 0; border-bottom: 1px solid var(--text-faint); font-size: 0.78rem;
+  }
+  .model-row:last-child { border-bottom: none; }
+  .model-name { flex: 0 0 200px; color: var(--text-dim); font-size: 0.72rem; }
+  .model-bar-wrap { flex: 1; height: 5px; background: var(--sand-pale); }
+  .model-bar { height: 100%; background: var(--gold-mid); }
+  .model-tokens { flex: 0 0 70px; text-align: right; color: var(--text-main); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center; margin-top: 2.5rem;
+    padding-top: 1.2rem; border-top: 1px solid var(--text-faint);
+    font-size: 0.62rem; color: var(--text-faint);
+    letter-spacing: 0.15em; font-family: 'Cinzel', serif;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 640px) {
+    .session-panel { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="dune-bg"></div>
+<div class="scanlines"></div>
+
+<!-- Drifting particles -->
+<script>
+(function() {
+  var colors = ["#888888", "#aaaaaa", "#444444", "#b82020"];
+  for (var i = 0; i < 18; i++) {
+    var p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left  = Math.random() * 100 + 'vw';
+    p.style.top   = Math.random() * 100 + 'vh';
+    p.style.animationDuration = (20 + Math.random() * 40) + 's';
+    p.style.animationDelay   = -(Math.random() * 40) + 's';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.opacity = Math.random() * 0.5;
+    document.body.appendChild(p);
+  }
+})();
+</script>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="ornament">⬛ &nbsp; GIEDI PRIME INDUSTRIAL TERMINAL &nbsp; ⬛</div>
+    <h1>HARKONNEN PROCESSOR</h1>
+    <div class="tagline">Consume. Calculate. Conquer.</div>
+    <div class="updated">Harvester reading as of 14:32:07</div>
+  </div>
+
+  <!-- Session window -->
+  <div class="divider"><span>// CURRENT SESSION WINDOW //</span></div>
+
+  <div class="session-panel">
+    <div class="session-primary">
+      <div class="session-stat-label">⬛ Processing Load Gauge</div>
+      <div class="session-big-num" style="color:#e8b84b">25.4k</div>
+      <div style="font-size:0.62rem;letter-spacing:3px;color:#4a3d28;margin-bottom:0.4rem;">TOKENS THIS SESSION</div>
+      <div class="session-pct-bar-wrap">
+        <div class="session-pct-bar-fill" style="width:41%;background:linear-gradient(90deg,#c9942a,#e8b84b);"></div>
+      </div>
+      <div class="session-pct-label" style="color:#c9942a">41% OF PEAK DAY</div>
+    </div>
+
+    <div class="session-stats">
+      <div>
+        <div class="session-stat-label">Session input</div>
+        <div class="session-stat-val dim">18.2k</div>
+      </div>
+      <div>
+        <div class="session-stat-label">Session output</div>
+        <div class="session-stat-val dim">7.1k</div>
+      </div>
+      <div>
+        <div class="session-stat-label">Session cost</div>
+        <div class="session-stat-val orange">$0.3100</div>
+      </div>
+      <div class="session-reset">
+        <span class="reset-badge">1h 47m</span>
+      </div>
+      <div class="session-note">
+        ⬡ Gauge scaled to peak daily usage (past 7 days).<br>
+        ⬡ Session window = 5-hour UTC cycle (approx. Claude Pro).
+      </div>
+    </div>
+  </div>
+
+  <!-- All-time + today -->
+  <div class="divider"><span>// PRODUCTION RESERVES //</span></div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Today's Output</div>
+      <div class="stat-value">33.9k</div>
+      <div class="stat-sub">$0.43 spent today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">7-Day Yield</div>
+      <div class="stat-value">382.4k</div>
+      <div class="stat-sub">$4.87 this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">All-Time Production</div>
+      <div class="stat-value cost">$28.74</div>
+      <div class="stat-sub">3.8M tokens lifetime</div>
+    </div>
+  </div>
+
+  <!-- Lifetime breakdown -->
+  <div class="breakdown-card">
+    <div class="card-title">Processing Breakdown — Lifetime</div>
+    <div class="breakdown-row">
+      <span class="bk">Input tokens</span><span class="bv hi">2.8M</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="bk">Output tokens</span><span class="bv hi">934.1k</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="bk">Cache read tokens</span><span class="bv">512.4k</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="bk">Cache write tokens</span><span class="bv">189.6k</span>
+    </div>
+    <div class="breakdown-row">
+      <span class="bk">Estimated total cost</span><span class="bv co">$28.7400</span>
+    </div>
+  </div>
+
+  <!-- 7-day chart -->
+  <div class="divider"><span>// 7-DAY YIELD RECORD //</span></div>
+  <div class="chart-card">
+    <div class="card-title">Daily Processing Output</div>
+    <div class="bars">
+      <div class="bar-col"><div class="bar-val">33.9k</div><div class="bar-fill" style="height:60px"></div><div class="bar-label">Wed</div></div>
+      <div class="bar-col"><div class="bar-val">61.4k</div><div class="bar-fill" style="height:110px"></div><div class="bar-label">Thu</div></div>
+      <div class="bar-col"><div class="bar-val">47.6k</div><div class="bar-fill" style="height:85px"></div><div class="bar-label">Fri</div></div>
+      <div class="bar-col"><div class="bar-val">29.8k</div><div class="bar-fill" style="height:53px"></div><div class="bar-label">Sat</div></div>
+      <div class="bar-col"><div class="bar-val">55.3k</div><div class="bar-fill" style="height:99px"></div><div class="bar-label">Sun</div></div>
+      <div class="bar-col"><div class="bar-val">38.7k</div><div class="bar-fill" style="height:69px"></div><div class="bar-label">Mon</div></div>
+      <div class="bar-col"><div class="bar-val">41.2k</div><div class="bar-fill today" style="height:73px"></div><div class="bar-label">Tue</div></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>// HARKONNEN MODELS //</span></div><div class="breakdown-card"><div class="card-title">Tokens by Model</div><div class="model-row"><span class="model-name">sonnet-4-6</span><div class="model-bar-wrap"><div class="model-bar" style="width:67%"></div></div><span class="model-tokens">2.6M</span></div><div class="model-row"><span class="model-name">opus-4-7</span><div class="model-bar-wrap"><div class="model-bar" style="width:24%"></div></div><span class="model-tokens">920.0k</span></div><div class="model-row"><span class="model-name">haiku-4-5</span><div class="model-bar-wrap"><div class="model-bar" style="width:7%"></div></div><span class="model-tokens">301.5k</span></div></div>
+
+  <div class="footer">
+    Efficiency is the only virtue. — Baron Harkonnen<br>
+    47 SESSION FILES · 2184 USAGE RECORDS · DATA SOURCE: ~/.claude/
+  </div>
+
+</div>
+</body>
+</html>

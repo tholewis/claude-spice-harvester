@@ -5,6 +5,25 @@
 
 ---
 
+## Themes
+
+### Arrakis
+| Menu Bar | Spice Ledger |
+|----------|-------------|
+| ![Arrakis menu bar](screenshots/menubar_arrakis.png) | ![Arrakis Spice Ledger](screenshots/ledger_dune.png) |
+
+### Caladan
+| Menu Bar | Spice Ledger |
+|----------|-------------|
+| ![Caladan menu bar](screenshots/menubar_caladan.png) | ![Caladan Spice Ledger](screenshots/ledger_caladan.png) |
+
+### Giedi Prime
+| Menu Bar | Spice Ledger |
+|----------|-------------|
+| ![Giedi Prime menu bar](screenshots/menubar_giedi_prime.png) | ![Giedi Prime Spice Ledger](screenshots/ledger_giedi_prime.png) |
+
+---
+
 ## What it does
 
 Claude Spice Harvester sits in your macOS menu bar and shows your Claude Code token usage at a glance. Click **Open Spice Ledger** for a full Dune-themed dashboard with charts and breakdowns.
