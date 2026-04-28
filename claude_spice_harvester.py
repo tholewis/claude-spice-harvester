@@ -1070,6 +1070,9 @@ class ClaudeSpiceHarvesterApp(rumps.App):
         self._config["theme"] = theme_key
         save_config(self._config)
         self._theme = THEMES[theme_key]
+        themes_menu = self.menu["Themes"]
+        for tk, td in THEMES.items():
+            themes_menu[td["name"]].state = (tk == theme_key)
         self._update_menu()
         self.refresh_data(None)
 
