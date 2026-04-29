@@ -5,6 +5,14 @@
 
 ---
 
+## Screenshots
+
+| Menu Bar | Spice Ledger |
+|---|---|
+| <img src="screenshots/menubar_arrakis.png" alt="Arrakis menu bar" width="300"> | <img src="screenshots/ledger_arrakis.png" alt="Arrakis Spice Ledger" width="300"> |
+
+---
+
 ## What it does
 
 Claude Spice Harvester sits in your macOS menu bar and shows your Claude Code token usage at a glance. Click **Open Spice Ledger** for a full themed dashboard with session gauge, charts, and per-model breakdowns.
