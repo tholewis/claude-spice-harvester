@@ -122,6 +122,29 @@ Edit `claude_spice_harvester.py` directly:
 
 ---
 
+## Why is the usage data different from Claude Code's usage settings?
+
+The numbers shown by Spice Harvester will rarely match what you see at **claude.ai → Settings → Usage**. There are several reasons:
+
+**Different data sources**
+Spice Harvester reads local JSONL files from `~/.claude/` on this machine only. The Claude settings page pulls from Anthropic's servers, which have the authoritative record across all your devices and sessions. If you've used Claude Code on multiple machines, or used Claude via the web or mobile apps, that usage won't appear in the local files.
+
+**Cost is estimated, not real**
+The app uses hardcoded API pricing (e.g. Sonnet at $3/$15 per million tokens) to estimate cost. Claude Code subscribers on a Pro or Max plan don't pay per-token — they pay a flat subscription, and Anthropic tracks usage against plan limits on the server side. The settings page reflects that server-side accounting, not a per-token dollar figure.
+
+**Local files may be incomplete**
+Claude Code writes session data locally, but not every token exchange is guaranteed to be flushed to disk (e.g. after a crash or force-quit). Some records may also be in a format the app doesn't recognise and are silently skipped.
+
+**The session window is approximated**
+The app approximates Claude Pro's reset cycle as a fixed 5-hour UTC boundary (0h, 5h, 10h, 15h, 20h). Anthropic's actual limit logic may use a different window or rolling calculation that isn't exposed locally.
+
+**Pricing rates may be stale**
+The rates in `estimate_cost()` reflect pricing at the time the code was written. Anthropic adjusts pricing over time, so some usage records may be costed at outdated rates.
+
+> **Note:** There is no public API for the data shown on the Claude settings page. Anthropic's Usage & Cost Admin API requires an organization account — it is not available to individual Pro or Max subscribers. The local JSONL approach is the only viable option for a personal tool like this.
+
+---
+
 
 *Reads from `~/.claude/` · No network calls · Data stays local*  
 *Built with `rumps` · Dune theme inspired by Frank Herbert*
