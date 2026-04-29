@@ -63,17 +63,17 @@ Switch themes from the **Themes** submenu in the menu bar. The selected theme pe
 ### Arrakis (Dune)
 | Menu Bar | Spice Ledger |
 |---|---|
-| ![Arrakis menu bar](screenshots/menubar_arrakis.png) | ![Arrakis Spice Ledger](screenshots/ledger_arrakis.png) |
+| <img src="screenshots/menubar_arrakis.png" alt="Arrakis menu bar" width="300"> | <img src="screenshots/ledger_arrakis.png" alt="Arrakis Spice Ledger" width="300"> |
 
 ### Caladan
 | Menu Bar | Spice Ledger |
 |---|---|
-| ![Caladan menu bar](screenshots/menubar_caladan.png) | ![Caladan Spice Ledger](screenshots/ledger_caladan.png) |
+| <img src="screenshots/menubar_caladan.png" alt="Caladan menu bar" width="300"> | <img src="screenshots/ledger_caladan.png" alt="Caladan Spice Ledger" width="300"> |
 
 ### Giedi Prime
 | Menu Bar | Spice Ledger |
 |---|---|
-| ![Giedi Prime menu bar](screenshots/menubar_giedi_prime.png) | ![Giedi Prime Spice Ledger](screenshots/ledger_giedi_prime.png) |
+| <img src="screenshots/menubar_giedi_prime.png" alt="Giedi Prime menu bar" width="300"> | <img src="screenshots/ledger_giedi_prime.png" alt="Giedi Prime Spice Ledger" width="300"> |
 
 ---
 
