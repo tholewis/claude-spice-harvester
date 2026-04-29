@@ -1,4 +1,7 @@
 # 🏜 Claude Spice Harvester
+
+![Claude Spice Harvester](screenshots/hero.png)
+
 ### *A Dune-inspired macOS menu bar app for Claude Code token usage*
 
 > "The spice must flow." — Dune
