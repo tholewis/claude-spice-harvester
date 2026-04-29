@@ -50,15 +50,22 @@ python3 claude_spice_harvester.py
 
 ## Themes
 
-Switch themes from the **Themes** submenu in the menu bar:
+Switch themes from the **Themes** submenu in the menu bar. The selected theme persists between sessions.
 
-| Theme | Flavor |
+### Arrakis (Dune)
+| Menu Bar | Spice Ledger |
 |---|---|
-| **Dune** | Arrakis — gold, amber, and spice red on deep desert black |
-| **Caladan** | House Atreides — ocean blues and teals |
-| **Giedi Prime** | House Harkonnen — industrial grays and machine red |
+| ![Arrakis menu bar](screenshots/menubar_arrakis.png) | ![Arrakis Spice Ledger](screenshots/ledger_arrakis.png) |
 
-The selected theme persists between sessions.
+### Caladan
+| Menu Bar | Spice Ledger |
+|---|---|
+| ![Caladan menu bar](screenshots/menubar_caladan.png) | ![Caladan Spice Ledger](screenshots/ledger_caladan.png) |
+
+### Giedi Prime
+| Menu Bar | Spice Ledger |
+|---|---|
+| ![Giedi Prime menu bar](screenshots/menubar_giedi_prime.png) | ![Giedi Prime Spice Ledger](screenshots/ledger_giedi_prime.png) |
 
 ---
 

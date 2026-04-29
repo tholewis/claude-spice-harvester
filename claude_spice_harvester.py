@@ -797,7 +797,7 @@ _C_DANGER  = (0.60, 0.22, 0.09)   # blood-spice red       — quit
 
 # Theme definitions
 THEMES = {
-    "dune": {
+    "arrakis": {
         "name": "Arrakis",
         "menu_colors": {
             "session": _C_GOLD,
@@ -970,7 +970,7 @@ def load_config():
                 return json.load(f)
         except Exception:
             pass
-    return {"theme": "dune"}
+    return {"theme": "arrakis"}
 
 
 def save_config(config):
@@ -1010,7 +1010,7 @@ class ClaudeSpiceHarvesterApp(rumps.App):
         self._data = None
         self._html_path = os.path.join(tempfile.gettempdir(), "claude_spice_harvester.html")
         self._config = load_config()
-        self._theme = THEMES.get(self._config.get("theme", "dune"), THEMES["dune"])
+        self._theme = THEMES.get(self._config.get("theme", "arrakis"), THEMES["arrakis"])
 
 
         _noop = lambda _: None  # noqa: E731  — keeps stat items enabled (not grayed out)
@@ -1060,7 +1060,7 @@ class ClaudeSpiceHarvesterApp(rumps.App):
         for theme_key, theme_data in THEMES.items():
             item = rumps.MenuItem(theme_data["name"], callback=self._switch_theme)
             item.theme_key = theme_key
-            if theme_key == self._config.get("theme", "dune"):
+            if theme_key == self._config.get("theme", "arrakis"):
                 item.state = True
             theme_menu.add(item)
         return theme_menu

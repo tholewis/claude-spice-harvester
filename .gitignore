@@ -6,3 +6,4 @@ build/
 *.spec
 ClaudeSpiceHarvester.app/
 .DS_Store
+.venv/

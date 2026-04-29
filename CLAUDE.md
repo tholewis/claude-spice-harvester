@@ -15,7 +15,8 @@ Requires: `pip install rumps` (and optionally `pyobjc` for color support — usu
 ```
 claude_spice_harvester.py  — entire app (data layer + HTML dashboard + menu bar app)
 build_app.sh               — packages into a standalone ClaudeSpiceHarvester.app via PyInstaller
-docs/README.md     — user-facing documentation
+README.md                  — user-facing documentation (shown on GitHub)
+screenshots/               — theme screenshots referenced by README.md
 ```
 
 ## Key architecture
