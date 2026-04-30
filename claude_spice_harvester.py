@@ -11,6 +11,7 @@ Requirements:
     pip install rumps
 """
 
+import html as _html
 import rumps
 import json
 import os
@@ -712,7 +713,7 @@ def build_html(data, theme):
                                reverse=True):
             mt = mv["input_tokens"] + mv["output_tokens"]
             pct = int(mt / model_total * 100)
-            short = name.replace("claude-", "").replace("-20", " '")
+            short = _html.escape(name.replace("claude-", "").replace("-20", " '"))
             rows += (
                 f'<div class="model-row">'
                 f'<span class="model-name">{short}</span>'
