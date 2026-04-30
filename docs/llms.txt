@@ -1,0 +1,117 @@
+# Claude Spice Harvester — LLM Reference
+
+## What this project is
+
+A single-file macOS menu bar application (Python) that reads Claude Code's local JSONL session files from `~/.claude/` and displays token usage statistics. No network calls at runtime. No server. No account required beyond having Claude Code installed.
+
+The entire application is `claude_spice_harvester.py`. Everything else is packaging, screenshots, and documentation.
+
+## Core technologies
+
+- Python 3.9+
+- `rumps` — macOS menu bar framework (pip dependency)
+- `pyobjc` / `AppKit` — for colored menu text via NSAttributedString (optional, usually pre-installed on macOS)
+- PyInstaller — for building a standalone `.app` (optional, only for packaging)
+- HTML/CSS/JS — dashboard rendered as a local `file://` page in the system browser
+
+## File structure
+
+```
+claude_spice_harvester.py   — entire app: data layer + HTML template + menu bar UI
+build_app.sh                — packages into ClaudeSpiceHarvester.app via PyInstaller
+README.md                   — user-facing documentation
+docs/
+  developer-guide.md        — full developer documentation
+  llms.txt                  — this file
+screenshots/                — PNG screenshots for README.md
+```
+
+## How it works (summary)
+
+1. On launch and every 5 minutes, `load_all_usage()` globs `~/.claude/projects/**/*.jsonl` and related paths.
+2. Each JSONL file is parsed line-by-line. Lines with `{type: "assistant", message: {usage: {...}}}` or similar shapes are extracted into usage records.
+3. `aggregate_records()` buckets records into: all-time totals, today (local date), this week (7 days), and current session (5-hour UTC window).
+4. The menu bar title and menu items are updated with formatted token counts.
+5. An HTML dashboard is written to `/tmp/claude_spice_harvester.html` and can be opened in the browser.
+
+## Key data shapes
+
+JSONL entries the app recognises (others are silently skipped):
+
+```jsonc
+// Format 1 — assistant message with nested usage
+{ "type": "assistant", "timestamp": "ISO8601", "message": { "model": "...", "usage": { "input_tokens": N, "output_tokens": N, "cache_read_input_tokens": N, "cache_creation_input_tokens": N } } }
+
+// Format 2 — flat role entry
+{ "role": "assistant", "timestamp": "ISO8601", "model": "...", "usage": { ... } }
+
+// Format 3 — cost-keyed entry (older format)
+{ "costUSD": 0.004, "inputTokens": N, "outputTokens": N, "cacheReadTokens": N, "cacheWriteTokens": N, "model": "...", "timestamp": "ISO8601" }
+```
+
+## Aggregation windows
+
+- **Session**: current 5-hour UTC window (floor(UTC_hour / 5) * 5h boundary). Approximates Claude Pro's reset cycle.
+- **Today**: local date equals `date.today()`.
+- **Week**: local date within the last 7 days inclusive.
+- **Totals**: all records regardless of date.
+
+## Cost estimation
+
+Cost is estimated (not actual billing) using `estimate_cost()`:
+
+| Model substring | Input $/M | Output $/M | Cache read $/M | Cache write $/M |
+|---|---|---|---|---|
+| claude-opus | 15.00 | 75.00 | 1.50 | 3.75 |
+| claude-sonnet | 3.00 | 15.00 | 0.30 | 3.75 |
+| claude-haiku | 0.25 | 1.25 | 0.03 | 0.30 |
+| (fallback) | 3.00 | 15.00 | 0.30 | 3.75 |
+
+Claude Code subscribers on Pro/Max pay a flat subscription. These figures do not reflect actual billing.
+
+## Themes
+
+Three themes are defined in the `THEMES` dict: `arrakis` (default, gold Dune aesthetic), `caladan` (ocean blue), `giedi_prime` (industrial grey/red). The active theme is persisted to `~/Library/Application Support/ClaudeSpiceHarvester/config.json`.
+
+Each theme defines:
+- `menu_colors` — per-item (R, G, B) tuples for NSAttributedString
+- `css_vars` — CSS custom properties for the HTML dashboard
+- `bg_gradients`, `particles` — visual decoration
+- `title`, `tagline`, `ornament`, `dividers`, `footer`, `gauge_label`, `stat_labels` — copy strings
+
+## Critical implementation notes for LLMs
+
+**HTML template uses `str.replace()`, never `.format()`.**
+`HTML_TEMPLATE` is a raw string containing CSS `{ }` blocks. Using `.format()` will raise a `KeyError` on CSS property declarations. All substitutions must use the `substitutions` dict with explicit `html.replace(k, v)` calls.
+
+**`_paint()` must be called after every `.title` assignment.**
+Setting `item.title = "..."` on a `rumps.MenuItem` clears the `NSAttributedString`. `_paint(item, rgb)` must be called again to restore color. Every stat item title update in `refresh_data()` is followed by a `_paint()` call.
+
+**Non-interactive items use `callback=lambda _: None`, not `callback=None`.**
+`rumps.MenuItem(callback=None)` is grayed out by macOS and cannot be colored. Stat display items need `callback=lambda _: None` to remain enabled (and thus colorable) while still doing nothing on click.
+
+**Session window is a heuristic.**
+The 5-hour UTC boundary approximation does not guarantee alignment with Anthropic's server-side session accounting.
+
+**No public API for individual usage data.**
+Anthropic's Usage & Cost Admin API requires an organization account. For personal Pro/Max subscriptions, local JSONL files are the only available data source.
+
+## Entry points
+
+```python
+# Normal run
+python3 claude_spice_harvester.py
+
+# Screenshot mode (requires pyobjc) — opens menu, captures it, quits
+python3 claude_spice_harvester.py --screenshot output.png
+```
+
+## What to change for common tasks
+
+| Task | Where |
+|---|---|
+| Change refresh interval | `rumps.Timer(self._auto_refresh, 300)` in `__init__` — change `300` |
+| Update token pricing | `pricing` dict in `estimate_cost()` |
+| Add a new theme | Add entry to `THEMES` dict — submenu is built dynamically |
+| Add a new stat to the dashboard | Extract in `extract_usage_from_entries()`, accumulate in `aggregate_records()`, add placeholder to `HTML_TEMPLATE`, substitute in `build_html()` |
+| Change menu bar icon | `"🏜"` string in `ClaudeSpiceHarvesterApp.__init__` super().__init__ call |
